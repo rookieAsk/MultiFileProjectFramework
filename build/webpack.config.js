@@ -1,58 +1,25 @@
 const webpack = require('webpack');
-const path = require('path');
-const glob = require('glob');
-const htmlWebpackPlugin = require('html-webpack-plugin');
-const DIST_PATH = path.resolve(__dirname,'../dist');
-const SRC_PATH = path.resolve(__dirname,'../src');
-const PUBLIC_PATH = path.resolve(__dirname,'../public');
-
-// 获取src下所有的js文件打包
-const entryFiles  = {};
-// const files = glob.sync(SRC_PATH+'/**/*.js')
-const files = glob.sync(path.join(SRC_PATH,'/**/*.js'));
-files.forEach(function(file,index){
-  let subKey = file.match(/src\/(\S*)\.js/)[1];
-  entryFiles[subKey] = file;
-})
-// 获取pulic下的所有的html文件打包
-const publicAll  = [];
-const publicFiles = glob.sync(path.join(PUBLIC_PATH,'/**/*.html'));
-publicFiles.forEach(function(file,index){
-  let htmlName = file.match(/\/public\/(\S*)\.html/)[1];
-  let htmlPlugin = new htmlWebpackPlugin({
-    filename:DIST_PATH+'/'+htmlName+'.html', //输出
-    title:htmlName, //index.html的title内容
-    // template:path.resolve(__dirname,'../index.html'), //选择编译的html文件
-    template:path.resolve(__dirname,'../public/'+htmlName+'.html'), //选择编译的html文件
-    inject:true, // 含有true,false,body,head,默认为true，script位于html的底部 ，false为不引入script
-    hash:true, //是否添加hash
-    chunks:[htmlName] //按需引入js文件，不要加后缀.js，如果不设置，默认引入所有的js文件，可以入全局js文件
-    // minfy:true //压缩html文件
-  })
-  publicAll.push(htmlPlugin)
-})
+const path = require('path'); //node的path模块
+const glob = require('glob'); //node的glob模块允许你使用 *等符号, 来写一个glob规则,像在shell里一样,获取匹配对应规则的文件.
+const htmlWebpackPlugin = require('html-webpack-plugin'); // 生成html文件
+const vueLoaderPlugin = require('vue-loader/lib/plugin') // vue-loader是webpack的加载器，允许以组件的格式创作Vue组件
+const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
+// const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
+const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
+const extractTextPlugin = require('extract-text-webpack-plugin'); // 抽离 CSS 文件
+// import 'babel-polyfill'
 
 module.exports = {
-  // 入口js文件
-  // entry:path.resolve(__dirname,'../src/index.js'), //单文件入口-方式一
-  // entry:[ path.resolve(__dirname,'../src/index.js') ], //多文件入口 -方式二
-  // entry:{
-  //   index:SRC_PATH+'/index.js'
-  // }, //多文件入口 -方式三
-  entry:entryFiles,
-  // 打包后输出文件
+// 入口js文件
+  entry:path.resolve(__dirname,'../src/main.js'),
+// 打包后输出文件
   output:{
     path: DIST_PATH,
-    // filename:'index.js'
-    filename:'[name].[chunkhash:5].js'
+    filename:'main.[hash:5].js'
   },
-  // 模块解析
-  module:{
-
-  },
-  // 开发服务
+// 开发服务
   devServer:{
-    hot:true,
+    hot:true, // 热更新
     contentBase:DIST_PATH,//热更新指向文件
     host: '0.0.0.0', // 域名 服务外部可访问
     useLocalIp:true,
@@ -96,28 +63,121 @@ module.exports = {
       })
     }
   },
-  // 插件
-  plugins:publicAll
-  // plugins:[
-  //   new htmlWebpackPlugin({
-  //     filename:DIST_PATH+'/index.html', //输出
-  //     title:'测试', //index.html的title内容
-  //     // template:path.resolve(__dirname,'../index.html'), //选择编译的html文件
-  //     template:path.resolve(__dirname,'../public/index.html'), //选择编译的html文件
-  //     inject:true, // 含有true,false,body,head,默认为true，script位于html的底部 ，false为不引入script
-  //     hash:true, //是否添加hash
-  //     chunks:['index'] //按需引入js文件，不要加后缀.js，如果不设置，默认引入所有的js文件，可以入全局js文件
-  //     // minfy:true //压缩html文件
-  //   }),
-  //   new htmlWebpackPlugin({
-  //     filename:DIST_PATH+'/test.html', //输出
-  //     title:'测试2', //index.html的title内容
-  //     // template:path.resolve(__dirname,'../index.html'), //选择编译的html文件
-  //     template:path.resolve(__dirname,'../public/test.html'), //选择编译的html文件
-  //     inject:true, // 含有true,false,body,head,默认为true，script位于html的底部 ，false为不引入script
-  //     hash:true, //是否添加hash
-  //     chunks:['test2']
-  //     // minfy:true //压缩html文件
-  //   })
-  // ]
+// 模块解析
+  module:{
+    rules:[
+      // 图片
+      {
+        test:/.(jpg|bmp|eps|gif|mif|miff|png|tif|tiff|svg|wmf|jpe|jpeg|dib|ico|tga|cut|pic)$/,
+        use:[{
+          loader:'url-loader',
+          options:{
+            limit:2048,
+            outputPath:'static/images',
+            publicPath:'../static/images',
+            name:'[hash:5].[ext]'
+          }
+        }]
+      },
+      // 视频
+      {
+        test:/\.(avi|asf|wmv|avs|flv|mov|3gp|mp4|mpg|mpeg|dat|ogm|vob|rm|rmvb|ts|tp|ifo|nsv)$/,
+        use:[{
+          loader:'file-loader',
+          options:{
+            outputPath:'static/video',
+            publicPath:'../static/video',
+            name:'[hash:5].[ext]'
+          }
+        }]
+      },
+      // 音频
+      {
+        test:/\.(mp3|aac|wav|wma|cda|flac|m4a|mid|mka|mp2|mpa|mpc|ape|ofr|ogg|ra|wv|tta|ac3|dts)$/,
+        use:[{
+          loader:'file-loader',
+          options:{
+            outputPath:'static/audio',
+            publicPath:'../static/audio',
+            name:'[hash:5].[ext]'
+          }
+        }]
+      },
+      // 文字
+      {
+        test:/\.(eot|otf|fon|font|ttf|ttc|woff|woff2)$/,
+        use:[{
+          loader:'file-loader',
+          options:{
+            limit: 10000,
+            outputPath:'static/font',
+            publicPath:'../static/font',
+            name:'[hash:5].[ext]'
+          }
+        }]
+      },
+      // 文档
+      {
+        test:/\.(exe|rar|zip|iso|doc|ppt|xls|xlsx|wps|txt|lrc|docx|pdf)$/,
+        use:[{
+          loader:'file-loader',
+          options:{
+            outputPath:'static/doc',
+            publicPath:'../static/doc',
+            name:'[hash:5].[ext]'
+          }
+        }]
+      },
+      // js
+      {
+        test:/\.js$/,
+        loader:'babel-loader',
+        exclude: /node_modules/
+      },
+      // css/scss
+      {
+        test:/\.(scss|css)$/,
+        loader:extractTextPlugin.extract({
+          use:[
+            'css-loader',
+            'sass-loader'
+          ]
+        })
+      },
+      // vue
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options:{
+          loaders:{
+            css:extractTextPlugin.extract({
+              fallback:'vue-style-loader',
+              use:'css-loader'
+            })
+          }
+        }
+      },
+    ]
+  },
+// 插件
+  plugins:[ 
+    new htmlWebpackPlugin({
+      filename:DIST_PATH+'/index.html', //输出
+      title:'titleName', //index.html的title内容
+      template:path.resolve(__dirname,'../public/index.html'), //选择编译的html文件
+      inject:true, // 含有true,false,body,head,默认为true，script位于html的底部 ，false为不引入script
+      hash:true, //是否添加hash
+      // chunks:['main'] //按需引入js文件，不要加后缀.js，如果不设置，默认引入所有的js文件，可以入全局js文件
+      minfy:{
+        collapseWhitespace:true,
+      } //压缩html文件
+    }),
+    new vueLoaderPlugin(),
+    new extractTextPlugin({
+      filename:'[name].[hash:5].css',
+      allChunks:true,
+      ignoreOrder:false, //禁用顺序检查,默认为false
+      // disable:false // 禁用插件
+    }),
+  ]
 }
