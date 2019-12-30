@@ -7,9 +7,11 @@ const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
 // const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
 const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
 const extractTextPlugin = require('extract-text-webpack-plugin'); // 抽离 CSS 文件
+const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 清除文件
 // import 'babel-polyfill'
 
 module.exports = {
+  mode: 'development',// 指定开发者打包模式
 // 入口js文件
   entry:path.resolve(__dirname,'../src/main.js'),
 // 打包后输出文件
@@ -136,11 +138,29 @@ module.exports = {
       },
       // css/scss
       {
-        test:/\.(scss|css)$/,
+        test:/\.(scss|sass|css)$/,
         loader:extractTextPlugin.extract({
           use:[
-            'css-loader',
-            'sass-loader'
+            {
+              loader: 'css-loader'
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                implementation: require('dart-sass')
+              }
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                plugins: [
+                  require("autoprefixer") /*css自动添加前缀*/
+                ]
+              }
+            },
+            // {
+            //   loader: 'css-hot-loader'
+            // }
           ]
         })
       },
@@ -159,6 +179,7 @@ module.exports = {
       },
     ]
   },
+  stats:'minimal', // { children: false } 屏蔽输出，errors-only 发生误时输出，minimal 发生错误或有新的编辑时输出
 // 插件
   plugins:[ 
     new htmlWebpackPlugin({
@@ -179,5 +200,6 @@ module.exports = {
       ignoreOrder:false, //禁用顺序检查,默认为false
       // disable:false // 禁用插件
     }),
-  ]
+    new CleanWebpackPlugin()// 删除文件 保留新文件
+  ],
 }
