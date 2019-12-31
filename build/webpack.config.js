@@ -4,20 +4,34 @@ const glob = require('glob'); //node的glob模块允许你使用 *等符号, 来
 const htmlWebpackPlugin = require('html-webpack-plugin'); // 生成html文件
 const vueLoaderPlugin = require('vue-loader/lib/plugin') // vue-loader是webpack的加载器，允许以组件的格式创作Vue组件
 const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
-// const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
+const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
 const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
 const extractTextPlugin = require('extract-text-webpack-plugin'); // 抽离 CSS 文件
 const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 清除文件
-// import 'babel-polyfill'
+function resolve (dir) {
+  return path.join(__dirname, '..', dir)
+}
 
 module.exports = {
-  mode: 'development',// 指定开发者打包模式
+  // mode: 'development',// 指定开发者打包模式
 // 入口js文件
   entry:path.resolve(__dirname,'../src/main.js'),
 // 打包后输出文件
   output:{
-    path: DIST_PATH,
-    filename:'main.[hash:5].js'
+    filename:"static/js/[name].[hash:5].js", //entry输出文件名，[name]为entry.key
+    path: DIST_PATH, //输出路径
+    chunkFilename:"static/js/[name].[hash:5].js", //除entry外的单独输出js文件输出名，[name]为require.ensure
+    publicPath:"/", //静态文件引用路径，最好为根路径
+  },
+  resolve: {
+    extensions: ['.js', '.vue', '.json'],
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js',
+      '@': resolve('src'),
+      'scss': resolve('src/assets/scss'),
+      "assets": path.join(__dirname, "..", "src", "assets") // 注意：静态资源通过src，不能这么设置
+      // 使用示例  @import "~scss/home.scss"
+    }
   },
 // 开发服务
   devServer:{
@@ -132,8 +146,12 @@ module.exports = {
       },
       // js
       {
-        test:/\.js$/,
+        test:/(\.jsx|\.js)$/,
         loader:'babel-loader',
+        options: {
+          plugins: ['syntax-dynamic-import']
+        },
+        include: SRC_PATH,
         exclude: /node_modules/
       },
       // css/scss
@@ -157,10 +175,7 @@ module.exports = {
                   require("autoprefixer") /*css自动添加前缀*/
                 ]
               }
-            },
-            // {
-            //   loader: 'css-hot-loader'
-            // }
+            }
           ]
         })
       },
