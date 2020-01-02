@@ -1,6 +1,9 @@
 <template>
   <div id="home">
     <p>dddddddd</p>
+    <p>dddddddd</p>
+    <p>dddddddd</p>
+    <p>dddddddd</p>
     <br>
   </div>
 </template>
@@ -41,7 +44,6 @@ export default {
     // axios.post(locationUrl+'/test/post').then(res => {  
     //   console.log(res);
     // });
-    
   },
   mounted() {},
   components: {}

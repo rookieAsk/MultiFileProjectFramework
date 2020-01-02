@@ -91,7 +91,7 @@ module.exports = {
             limit:2048,
             outputPath:'static/images',
             publicPath:'../static/images',
-            name:'[hash:5].[ext]'
+            name:'[name].[hash:5].[ext]'
           }
         }]
       },
@@ -103,7 +103,7 @@ module.exports = {
           options:{
             outputPath:'static/video',
             publicPath:'../static/video',
-            name:'[hash:5].[ext]'
+            name:'[name].[hash:5].[ext]'
           }
         }]
       },
@@ -115,7 +115,7 @@ module.exports = {
           options:{
             outputPath:'static/audio',
             publicPath:'../static/audio',
-            name:'[hash:5].[ext]'
+            name:'[name].[hash:5].[ext]'
           }
         }]
       },
@@ -128,7 +128,7 @@ module.exports = {
             limit: 10000,
             outputPath:'static/font',
             publicPath:'../static/font',
-            name:'[hash:5].[ext]'
+            name:'[name].[hash:5].[ext]'
           }
         }]
       },
@@ -140,7 +140,7 @@ module.exports = {
           options:{
             outputPath:'static/doc',
             publicPath:'../static/doc',
-            name:'[hash:5].[ext]'
+            name:'[name].[hash:5].[ext]'
           }
         }]
       },
@@ -156,28 +156,36 @@ module.exports = {
       },
       // css/scss
       {
-        test:/\.(scss|sass|css)$/,
-        loader:extractTextPlugin.extract({
-          use:[
-            {
-              loader: 'css-loader'
-            },
-            {
-              loader: 'sass-loader',
-              options: {
-                implementation: require('dart-sass')
-              }
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                plugins: [
-                  require("autoprefixer") /*css自动添加前缀*/
-                ]
-              }
-            }
-          ]
-        })
+        test:/\.(css|scss|sass)$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'sass-loader',
+          // {
+          //   loader: "postcss-loader"
+          // }
+        ],
+        // loader:extractTextPlugin.extract({
+        //   use:[
+        //     {
+        //       loader: 'css-loader'
+        //     },
+        //     {
+        //       loader: 'sass-loader',
+        //       options: {
+        //         implementation: require('dart-sass')
+        //       }
+        //     },
+        //     // {
+        //     //   loader: 'postcss-loader',
+        //     //   options: {
+        //     //     plugins: [
+        //     //       require("autoprefixer") /*css自动添加前缀*/
+        //     //     ]
+        //     //   }
+        //     // }
+        //   ]
+        // })
       },
       // vue
       {
