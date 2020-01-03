@@ -3,12 +3,13 @@ const constant = require('./constant'); // 引入常量文件
 const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
 const path = require('path'); //node的path模块
-const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
+const DIST_PATH = path.resolve(__dirname, '../dist'); // dist路径
 // const extractTextPlugin = require('extract-text-webpack-plugin'); // 抽离 CSS 文件
 const MiniCssExtractPlugin = require('mini-css-extract-plugin'); // 用于提取css到文件中
 const OptimizeCssnanoPlugin = require('@intervolga/optimize-cssnano-plugin'); // 用于压缩css代码
 const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 清除文件
-const CopyWebpackPlugin = require('copy-webpack-plugin'); 
+const CopyWebpackPlugin = require('copy-webpack-plugin'); // 拷贝文件
+const FileManagerWebpackPlugin = require('filemanager-webpack-plugin')
 
 module.exports = merge(webpackConfig, {
   mode: 'production',// 指定开发者打包模式压缩js代码
@@ -65,13 +66,13 @@ module.exports = merge(webpackConfig, {
     ]
   },
   // 插件
-  plugins:[ 
+  plugins: [
     new MiniCssExtractPlugin({
       filename: 'static/css/[name].[hash:5].css',
       chunkFilename: 'static/css/[name].[hash:5].css'
     }),
     new OptimizeCssnanoPlugin({
-      sourceMap: true,
+      sourceMap: true, // 是否生成css的.map文件, 调试使用
       cssnanoOptions: {
         preset: [
           'default',
@@ -88,6 +89,16 @@ module.exports = merge(webpackConfig, {
         to: path.resolve(__dirname, '../dist/static')
       }
     ]),
-    new CleanWebpackPlugin()// 删除文件 保留新文件
+    new CleanWebpackPlugin(), // 删除文件 保留新文件
+    new FileManagerWebpackPlugin ({  // 需要在 plugins 数组里添加
+      onEnd: {
+         delete: [
+            './dist/dist.zip', // 删除之前已经存在的压缩包
+          ],
+         archive: [
+            {source: './dist', destination: './dist/dist.zip'},
+          ]
+      }
+    })
   ]
 })

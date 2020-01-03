@@ -5,8 +5,6 @@ const htmlWebpackPlugin = require('html-webpack-plugin'); // 生成html文件
 const vueLoaderPlugin = require('vue-loader/lib/plugin') // vue-loader是webpack的加载器，允许以组件的格式创作Vue组件
 const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
 const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
-// const glob = require('glob'); //node的glob模块允许你使用 *等符号, 来写一个glob规则,像在shell里一样,获取匹配对应规则的文件.
-// const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
@@ -28,7 +26,7 @@ module.exports = {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
       'scss': resolve('src/assets/scss'),
-      "assets": path.join(__dirname, "..", "src", "assets") // 注意：静态资源通过src，不能这么设置
+      "img": path.join(__dirname, "..", "src", "assets", "images") // 注意：静态资源通过src，不能这么设置
     }
   },
 // 模块解析
@@ -40,7 +38,7 @@ module.exports = {
         use:[{
           loader:'url-loader',
           options:{
-            limit:10000,
+            limit:20000,
             outputPath:'static/images',
             publicPath:'../static/images',
             name:'[name].[hash:5].[ext]'

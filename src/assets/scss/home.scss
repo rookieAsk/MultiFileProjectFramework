@@ -1,7 +1,6 @@
 $color:red;
 #home{
   opacity: 0.2;
-  background: $color;
-  /* background: url('~assets/images/logo.png'); */
-  background-image: linear-gradient(to right, $color , yellow);
+  background: url('~img/logo.png');
+  // background-image: linear-gradient(to right, $color , yellow);
 }
