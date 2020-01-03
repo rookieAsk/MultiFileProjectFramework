@@ -1,8 +1,6 @@
 <template>
-  <div id="home">
-    <p @click="router()">dddddddd</p>
-    <router-link to="/about">go about</router-link>
-    <router-view></router-view>
+  <div id="about">
+    <p>about</p>
   </div>
 </template>
 
@@ -30,9 +28,6 @@ export default {
         console.log('1111111111')
         throw (err)
       })
-    },
-    router(){
-      this.$router.push({name: 'about'});
     }
   },
   created() {
@@ -52,5 +47,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "~scss/home.scss";
 </style>

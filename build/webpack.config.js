@@ -1,82 +1,34 @@
 const webpack = require('webpack');
+const constant = require('./constant'); // 引入常量文件
 const path = require('path'); //node的path模块
-const glob = require('glob'); //node的glob模块允许你使用 *等符号, 来写一个glob规则,像在shell里一样,获取匹配对应规则的文件.
 const htmlWebpackPlugin = require('html-webpack-plugin'); // 生成html文件
 const vueLoaderPlugin = require('vue-loader/lib/plugin') // vue-loader是webpack的加载器，允许以组件的格式创作Vue组件
 const DIST_PATH = path.resolve(__dirname,'../dist'); // dist路径
 const SRC_PATH = path.resolve(__dirname,'../src'); // src路径
-const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
-const extractTextPlugin = require('extract-text-webpack-plugin'); // 抽离 CSS 文件
-const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 清除文件
+// const glob = require('glob'); //node的glob模块允许你使用 *等符号, 来写一个glob规则,像在shell里一样,获取匹配对应规则的文件.
+// const PUBLIC_PATH = path.resolve(__dirname,'../public'); // public路径
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
 
 module.exports = {
-  // mode: 'development',// 指定开发者打包模式
 // 入口js文件
   entry:path.resolve(__dirname,'../src/main.js'),
 // 打包后输出文件
   output:{
     filename:"static/js/[name].[hash:5].js", //entry输出文件名，[name]为entry.key
     path: DIST_PATH, //输出路径
-    chunkFilename:"static/js/[name].[hash:5].js", //除entry外的单独输出js文件输出名，[name]为require.ensure
-    publicPath:"/", //静态文件引用路径，最好为根路径
+    // chunkFilename:"static/js/[name].[hash:5].js", //除entry外的单独输出js文件输出名，[name]为require.ensure
+    // publicPath:"/", //静态文件引用路径，最好为根路径
   },
+// 别名
   resolve: {
     extensions: ['.js', '.vue', '.json'],
-    alias: {
+    alias: { // 使用示例  @import "~scss/home.scss"
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
       'scss': resolve('src/assets/scss'),
       "assets": path.join(__dirname, "..", "src", "assets") // 注意：静态资源通过src，不能这么设置
-      // 使用示例  @import "~scss/home.scss"
-    }
-  },
-// 开发服务
-  devServer:{
-    hot:true, // 热更新
-    contentBase:DIST_PATH,//热更新指向文件
-    host: '0.0.0.0', // 域名 服务外部可访问
-    useLocalIp:true,
-    port:8000, //服务端口号
-    https: false, // https:{type:Boolean}
-    open: process.platform === 'win32',
-    // 启动或保存的信息将会被隐藏
-    noInfo: false,
-    // historyApiFallback: true,
-    // 页面报404时返回的页面，可设置为 historyApiFallback: true, 默认为index.html，或
-    // historyApiFallback: {
-    //   rewrites: [
-        // { from: /^\/$/, to: '/views/landing.html' },
-        // { from: /^\/subpage/, to: '/views/subpage.html' },
-        // { from: /./, to: '/views/404.html' }
-    //   ]
-    // },
-    // historyApiFallback:false,
-    proxy: { // 将请求服务器地址印射为/api, 配置多个代理
-      '/api': {
-        target: 'http://220.248.3.42:8088',  // 接口域名 正式地址
-        // target: 'http://10.8.171.66:8088',  // 接口域名 测试地址
-        changeOrigin: true,  //是否跨域，实际无影响
-        secure: false,  // 如果是https接口，需要配置这个参数，当代理某些https服务报错时用
-        pathRewrite: {
-          '^/api': ''   //正则匹配/api，将/api重写为空
-        }
-      },
-      '/api2': {
-        target: '<other_url>'
-      }
-    },
-    // moke接口
-    before: function (app) {
-      // `app` 是一个 express 实例
-      app.get('/test/get', function(req,res){
-        res.json({ success: 200 , data: 'response getData' });
-      });
-      app.post('/test/post', function(req,res){
-        res.json({ success: 200 , data: 'response postData' });
-      })
     }
   },
 // 模块解析
@@ -84,11 +36,11 @@ module.exports = {
     rules:[
       // 图片
       {
-        test:/.(jpg|bmp|eps|gif|mif|miff|png|tif|tiff|svg|wmf|jpe|jpeg|dib|ico|tga|cut|pic)$/,
+        test:/.(jpg|bmp|eps|gif|mif|miff|png|tif|tiff|svg|svgz|wmf|jpe|jpeg|dib|ico|tga|cut|pic)$/,
         use:[{
           loader:'url-loader',
           options:{
-            limit:2048,
+            limit:10000,
             outputPath:'static/images',
             publicPath:'../static/images',
             name:'[name].[hash:5].[ext]'
@@ -149,57 +101,31 @@ module.exports = {
         test:/(\.jsx|\.js)$/,
         loader:'babel-loader',
         options: {
-          plugins: ['syntax-dynamic-import']
+          plugins: ['syntax-dynamic-import'] //router动态import需要
         },
         include: SRC_PATH,
         exclude: /node_modules/
       },
-      // css/scss
-      {
-        test:/\.(css|scss|sass)$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader',
-          // {
-          //   loader: "postcss-loader"
-          // }
-        ],
-        // loader:extractTextPlugin.extract({
-        //   use:[
-        //     {
-        //       loader: 'css-loader'
-        //     },
-        //     {
-        //       loader: 'sass-loader',
-        //       options: {
-        //         implementation: require('dart-sass')
-        //       }
-        //     },
-        //     // {
-        //     //   loader: 'postcss-loader',
-        //     //   options: {
-        //     //     plugins: [
-        //     //       require("autoprefixer") /*css自动添加前缀*/
-        //     //     ]
-        //     //   }
-        //     // }
-        //   ]
-        // })
-      },
       // vue
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options:{
-          loaders:{
-            css:extractTextPlugin.extract({
-              fallback:'vue-style-loader',
-              use:'css-loader'
-            })
+        use: [
+          {
+            loader: 'cache-loader'
+          },
+          {
+            loader: 'thread-loader'
+          },
+          {
+            loader: 'vue-loader',
+            options: {
+              compilerOptions: {
+                preserveWhitespace: false
+              },
+            }
           }
-        }
-      },
+        ]
+      }
     ]
   },
   stats:'minimal', // { children: false } 屏蔽输出，errors-only 发生误时输出，minimal 发生错误或有新的编辑时输出
@@ -217,12 +143,8 @@ module.exports = {
       } //压缩html文件
     }),
     new vueLoaderPlugin(),
-    new extractTextPlugin({
-      filename:'[name].[hash:5].css',
-      allChunks:true,
-      ignoreOrder:false, //禁用顺序检查,默认为false
-      // disable:false // 禁用插件
-    }),
-    new CleanWebpackPlugin()// 删除文件 保留新文件
+    new webpack.DefinePlugin({ // 定义全局变量
+      CONSTANT: JSON.stringify(constant)
+    })
   ],
 }
